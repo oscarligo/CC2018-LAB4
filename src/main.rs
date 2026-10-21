@@ -11,7 +11,7 @@ use std::thread;
 use std::time::Duration;
 
 fn main() {
-    const WINDOW_WIDTH: i32 = 1000;
+    const WINDOW_WIDTH: i32 = 600;
     const WINDOW_HEIGHT: i32 = 650;
 
     let (mut window, thread) = raylib::init()

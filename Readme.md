@@ -1,14 +1,36 @@
-# CC2018 - LAB2
+# CC2018 - LAB4
 
-An introductory project to explore framebuffers and image files by implementing core 2D rendering algorithms.
+## Rasterizador de archivo .obj
 
-## Features
+El programa rasteriza el archivo `assets/object.obj` con un modelo ya triangulado. Primero carga sus vértices e indices para las caras. Por cada vertice proyecta los vértices 3D de cada triángulo a coordenadas 2D y dibuja sus tres aristas en el framebuffer con el algoritmo de Bresenham. Finalmente, copia el framebuffer a la ventana.
 
-- **Framebuffer:** Custom 2D pixel buffer implementation.
-- **Line Drawing:** Bresenham's line algorithm.
-- **Polygon Rendering:** Functions to draw 2D polygons.
-- **Color Filling:** Flood Fill algorithm for shape filling.
-- **Conway's Game of Life Implementation**
+```mermaid
+flowchart LR
+    load[Cargar el objeto OBJ]
+    project[Proyectar los vértices de 3D a 2D]
+    rasterize[Calcular los píxeles de cada arista con Bresenham]
+    display[Mostrar el objeto en la ventana]
 
-<img width="800" height="800" alt="gol" src="https://github.com/user-attachments/assets/c48d6a93-0717-4c65-ba95-69a90555d1ef" />
+    load --> project --> rasterize --> display
+```
 
+## Demo
+
+![Demostración del rasterizador](assets/demo.gif)
+
+### Cálculos principales
+
+Para un vértice `v = (vx, vy, vz)` y una cámara `c = (cx, cy, cz)`, primero se calcula su profundidad relativa:
+
+```text
+z = vz - cz
+```
+
+Si `z <= 0.1`, el vértice se descarta porque está detrás de la cámara o demasiado cerca de ella. En caso contrario se aplica la proyección en perspectiva, usando `fov_scale = 90`:
+
+```text
+x_pantalla = (vx - cx) / z * fov_scale + ancho / 2
+y_pantalla = -(vy - cy) / z * fov_scale + alto / 2
+```
+
+La división entre `z` hace que los puntos lejanos se vean más cerca del centro. El signo negativo de `y_pantalla` adapta el eje vertical del mundo 3D al sistema de coordenadas de la pantalla.
