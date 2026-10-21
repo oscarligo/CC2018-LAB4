@@ -1,33 +1,37 @@
 use crate::framebuffer::Framebuffer;
-use crate::game_of_life::GameOfLife;
+use crate::line::line;
+use crate::load_objects::{Object, project_vertex};
 use raylib::prelude::*;
 
-pub fn draw_game_of_life(
+pub fn render(
     framebuffer: &mut Framebuffer,
-    game: &GameOfLife,
-    position: Vector2,
-    cell_size: u32,
-    color: Color,
+    obj: &Object,
+    camera_pos: Vector3,
+    fov: f32,
 ) {
-    if cell_size == 0 {
-        return;
-    }
 
-    framebuffer.set_current_color(color);
+    let width = framebuffer.width as f32;
+    let height = framebuffer.height as f32;
 
-    for (cell_x, cell_y) in game.live_cells() {
-        let base_x = position.x as i32 + cell_x as i32 * cell_size as i32;
-        let base_y = position.y as i32 + cell_y as i32 * cell_size as i32;
+    for chunk in obj.indices.chunks_exact(3) {
+        let p0 = obj.vertices[chunk[0] as usize];
+        let p1 = obj.vertices[chunk[1] as usize];
+        let p2 = obj.vertices[chunk[2] as usize];
 
-        for offset_y in 0..cell_size as i32 {
-            for offset_x in 0..cell_size as i32 {
-                let pixel_x = base_x + offset_x;
-                let pixel_y = base_y + offset_y;
+        let proj0 = project_vertex(p0, camera_pos, fov, width, height);
+        let proj1 = project_vertex(p1, camera_pos, fov, width, height);
+        let proj2 = project_vertex(p2, camera_pos, fov, width, height);
 
-                if pixel_x >= 0 && pixel_y >= 0 {
-                    framebuffer.set_pixel(pixel_x as u32, pixel_y as u32);
-                }
-            }
+        // Draw the triangle edges if all vertices are projected successfully
+        if let (Some(a), Some(b)) = (proj0, proj1) {
+            line(framebuffer, a, b);
+        }
+        if let (Some(b), Some(c)) = (proj1, proj2) {
+            line(framebuffer, b, c);
+        }
+        if let (Some(c), Some(a)) = (proj2, proj0) {
+            line(framebuffer, c, a);
         }
     }
+    
 }
